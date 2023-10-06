@@ -42,7 +42,6 @@ describe('Scanner', () => {
                 expect(tokens[0].type).to.equal('EQUAL_EQUAL');
             });
         });
-
     });
 
     describe('comments scanner', () => {
@@ -50,7 +49,7 @@ describe('Scanner', () => {
             const tokens = new Scanner('// this is a comment').scanTokens();
             expect(tokens[0].type).to.equal('EOF');
         });
-    })
+    });
 
     describe('number scanner', () => {
         it('should scan numbers', () => {
@@ -67,7 +66,6 @@ describe('Scanner', () => {
         it('should scan strings', () => {
             const tokens = new Scanner('"hello world"').scanTokens();
             expect(tokens[0].type).to.equal('STRING');
-
         });
         it('should scan identifiers', () => {
             const tokens = new Scanner('my_var').scanTokens();
@@ -77,5 +75,5 @@ describe('Scanner', () => {
             const tokens = new Scanner('and').scanTokens();
             expect(tokens[0].type).to.equal('AND');
         });
-    })
+    });
 });

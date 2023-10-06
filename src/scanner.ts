@@ -92,11 +92,11 @@ export class Scanner {
                 break;
             // Longer lexemes
             case '/':
-                // This is similar to the other two-character operators, except that when we 
+                // This is similar to the other two-character operators, except that when we
                 // find a second /, we don't end the token yet. Instead, we keep consuming
                 // characters until we reach the end of the line.
                 //
-                // Comments are lexemes that the scanner ignores. They are not tokens, so we 
+                // Comments are lexemes that the scanner ignores. They are not tokens, so we
                 // don't add them to the list of tokens. We just consume characters until we
                 // reach the end of the line.
                 if (this.match('/')) {
@@ -169,8 +169,8 @@ export class Scanner {
 
         if (this.isAtEnd()) {
             // TODO: Format this error with line number also
-            console.error("Unterminated string.")
-            return
+            console.error('Unterminated string.');
+            return;
         }
 
         // The closing ".
@@ -194,10 +194,7 @@ export class Scanner {
             while (this.isDigit(this.peek())) this.advance();
         }
 
-        this.addToken(
-            TokenType.NUMBER,
-            parseFloat(this.source.substring(this.start, this.current))
-        )
+        this.addToken(TokenType.NUMBER, parseFloat(this.source.substring(this.start, this.current)));
     }
 
     private identifier(): void {
@@ -216,9 +213,7 @@ export class Scanner {
     }
 
     private isAlpha(character: string): boolean {
-        return (character >= 'a' && character <= 'z') ||
-            (character >= 'A' && character <= 'Z') ||
-            character === '_';
+        return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character === '_';
     }
 
     private isAlphaNumeric(character: string): boolean {

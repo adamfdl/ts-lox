@@ -1,4 +1,4 @@
-import { Token } from "./token";
+import { Token } from './token';
 
 // TODO: We can unexport this interface?
 export interface Visitor<T> {
@@ -47,7 +47,7 @@ export class Grouping extends Expr {
 export class Literal extends Expr {
     // value could be of type number, string, boolean or null
     // we could also have it as a union type of number | string | boolean | null
-    readonly value: Object; 
+    readonly value: Object;
 
     constructor(value: Object) {
         super();
