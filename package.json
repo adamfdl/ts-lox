@@ -6,8 +6,8 @@
     "scripts": {
         "build": "tsc",
         "test": "mocha --require ts-node/register test/**/*.spec.ts",
-        "start": "node dist/lox.js",
-        "start:dev": "ts-node src/lox.ts",
+        "start": "node dist/main.js",
+        "start:dev": "ts-node src/main.ts",
         "format": "prettier --config .prettierrc.js --write './**/*.{js,ts,json,yml,yaml}'"
     },
     "author": "",
