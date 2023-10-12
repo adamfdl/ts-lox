@@ -6,11 +6,17 @@ import { TokenType } from './token_type';
 import { Parser } from './parser';
 import { Expr } from './expr';
 import { AstPrinter } from './tools/ast_printer';
+import { RuntimeError } from './runtime_error';
+import { Interpreter } from './interpreter';
 
 const ask = prompt();
 
 export class Lox {
+    // We make the field static so that succesive calls to `run()` inside a REPL session
+    // will use the same interpreter instance.
+    private static interpreter: Interpreter = new Interpreter();
     static hadError = false;
+    static hadRuntimeError = false;
 
     constructor() {
         Lox.hadError = false;
@@ -36,13 +42,21 @@ export class Lox {
         const expression: Expr = parser.parse();
 
         // Stop if there was a syntax error
-        if (this.hadError) return;
+        if (this.hadError) {
+            process.exit(65);
+        }
+
+        if (this.hadRuntimeError) {
+            process.exit(70);
+        }
 
         // for (const token of tokens) {
         //     console.log(token.toString());
         // }
 
-        console.log(new AstPrinter().print(expression));
+        // console.log(new AstPrinter().print(expression));
+
+        this.interpreter.interpret(expression);
     }
 
     public static runFile(path: string): void {
@@ -60,6 +74,11 @@ export class Lox {
 
     public static error(line: number, message: string): void {
         this.report(line, '', message);
+    }
+
+    public static runtimeError(error: RuntimeError): void {
+        console.error(error.message + '\n[line ' + error.token.line + ']');
+        Lox.hadRuntimeError = true;
     }
 
     public static parseError(token: Token, message: string): void {
