@@ -5,11 +5,11 @@ export class Token {
 
     readonly lexeme: string;
 
-    readonly literal: Object | null;
+    readonly literal: string | number | null | boolean;
 
     readonly line: number;
 
-    constructor(tokenType: TokenType, lexeme: string, literal: Object | null, line: number) {
+    constructor(tokenType: TokenType, lexeme: string, literal: string | number | null | boolean | null, line: number) {
         this.type = tokenType;
         this.lexeme = lexeme;
         this.literal = literal;

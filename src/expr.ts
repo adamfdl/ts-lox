@@ -47,9 +47,9 @@ export class Grouping extends Expr {
 export class Literal extends Expr {
     // value could be of type number, string, boolean or null
     // we could also have it as a union type of number | string | boolean | null
-    readonly value: Object;
+    readonly value: number | string | boolean | null;
 
-    constructor(value: Object) {
+    constructor(value: number | string | boolean | null) {
         super();
         this.value = value;
     }

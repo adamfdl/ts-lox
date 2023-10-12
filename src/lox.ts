@@ -1,6 +1,11 @@
 import fs from 'fs';
 import prompt from 'prompt-sync';
-import { Scanner } from "./scanner";
+import { Scanner } from './scanner';
+import { Token } from './token';
+import { TokenType } from './token_type';
+import { Parser } from './parser';
+import { Expr } from './expr';
+import { AstPrinter } from './tools/ast_printer';
 
 const ask = prompt();
 
@@ -27,9 +32,17 @@ export class Lox {
         const scanner = new Scanner(source);
         const tokens = scanner.scanTokens();
 
-        for (const token of tokens) {
-            console.log(token.toString());
-        }
+        const parser: Parser = new Parser(tokens);
+        const expression: Expr = parser.parse();
+
+        // Stop if there was a syntax error
+        if (this.hadError) return;
+
+        // for (const token of tokens) {
+        //     console.log(token.toString());
+        // }
+
+        console.log(new AstPrinter().print(expression));
     }
 
     public static runFile(path: string): void {
@@ -47,6 +60,14 @@ export class Lox {
 
     public static error(line: number, message: string): void {
         this.report(line, '', message);
+    }
+
+    public static parseError(token: Token, message: string): void {
+        if (token.type == TokenType.EOF) {
+            this.report(token.line, ' at end', message);
+        } else {
+            this.report(token.line, " at '" + token.lexeme + "'", message);
+        }
     }
 
     public static report(line: number, where: string, message: string): void {
