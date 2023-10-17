@@ -5,9 +5,9 @@ import { Token } from './token';
 import { TokenType } from './token_type';
 import { Parser } from './parser';
 import { Expr } from './expr';
-import { AstPrinter } from './tools/ast_printer';
 import { RuntimeError } from './runtime_error';
 import { Interpreter } from './interpreter';
+import { Stmt } from './stmt';
 
 const ask = prompt();
 
@@ -39,15 +39,11 @@ export class Lox {
         const tokens = scanner.scanTokens();
 
         const parser: Parser = new Parser(tokens);
-        const expression: Expr = parser.parse();
+        const statements: Stmt[] = parser.parse();
 
         // Stop if there was a syntax error
         if (this.hadError) {
             process.exit(65);
-        }
-
-        if (this.hadRuntimeError) {
-            process.exit(70);
         }
 
         // for (const token of tokens) {
@@ -56,12 +52,14 @@ export class Lox {
 
         // console.log(new AstPrinter().print(expression));
 
-        this.interpreter.interpret(expression);
+        this.interpreter.interpret(statements);
     }
 
     public static runFile(path: string): void {
         const data = fs.readFileSync(path, 'utf-8');
         Lox.run(data);
+
+        if (this.hadError || this.hadRuntimeError) process.exit(70);
     }
 
     public static runPrompt(): void {

@@ -1,13 +1,45 @@
-import { Binary, Expr, Grouping, Literal, Unary, Visitor } from './expr';
+import * as Stmt from './stmt';
+import { Binary, Expr, Grouping, Literal, Unary, Visitor as ExprVisitor, Variable } from './expr';
 import { Lox } from './lox';
 import { RuntimeError } from './runtime_error';
 import { Token } from './token';
 import { TokenType } from './token_type';
+import { Environment } from './environment';
 
-export class Interpreter implements Visitor<any> {
+export class Interpreter implements ExprVisitor<any>, Stmt.Visitor<void> {
+
+    // We store it as a field directly in Interpreter so that the variables 
+    // stay in memory as long as the interpreter is still running.
+    private readonly environment: Environment = new Environment();
 
     private evaluate(expr: Expr): any {
         return expr.accept(this);
+    }
+
+    private execute(stmt: Stmt.Stmt): void {
+        stmt.accept(this);
+    }
+
+    public visitVarStmt(stmt: Stmt.Var): void {
+        let value: any = null;
+        if (stmt.initializer !== null) {
+            value = this.evaluate(stmt.initializer);
+        }
+
+        this.environment.define(stmt.name.lexeme, value);
+    }
+
+    public visitVariableExpr(expr: Variable): any {
+       return this.environment.get(expr.name); 
+    }
+
+    public visitExpressionStmt(stmt: Stmt.Expression): void {
+       this.evaluate(stmt.expression);
+    }
+
+    public visitPrintStmt(stmt: Stmt.Print): void {
+        const value: any = this.evaluate(stmt.expression);
+        console.log(this.stringify(value));
     }
 
     public visitLiteralExpr(expr: Literal): any {
@@ -121,10 +153,11 @@ export class Interpreter implements Visitor<any> {
         return String(object);
     }
 
-    public interpret(expr: Expr): void {
+    public interpret(statements: Stmt.Stmt[]): void {
         try {
-            const value: any = this.evaluate(expr);
-            console.log(this.stringify(value));
+            for (const statement of statements) {
+                this.execute(statement);
+            }
         } catch (error) {
             if (error instanceof RuntimeError) {
                 Lox.runtimeError(error);

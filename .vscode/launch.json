@@ -23,6 +23,7 @@
                 "tsconfig-paths/register"
             ],
             "console": "integratedTerminal",
+            "stopOnEntry": true
         }
     ]
 }
