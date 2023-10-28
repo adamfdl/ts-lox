@@ -1,5 +1,5 @@
 import * as Stmt from './stmt';
-import { Binary, Expr, Grouping, Literal, Unary, Visitor as ExprVisitor, Variable } from './expr';
+import { Binary, Expr, Grouping, Literal, Unary, Visitor as ExprVisitor, Variable, Assign } from './expr';
 import { Lox } from './lox';
 import { RuntimeError } from './runtime_error';
 import { Token } from './token';
@@ -18,6 +18,12 @@ export class Interpreter implements ExprVisitor<any>, Stmt.Visitor<void> {
 
     private execute(stmt: Stmt.Stmt): void {
         stmt.accept(this);
+    }
+
+    public visitAssignExpr(expr: Assign): void {
+       const value: any = this.evaluate(expr.value);
+       this.environment.assign(expr.name, value);
+       return value;
     }
 
     public visitVarStmt(stmt: Stmt.Var): void {

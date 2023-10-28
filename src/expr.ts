@@ -7,6 +7,7 @@ export interface Visitor<T> {
     visitLiteralExpr(expr: Literal): T;
     visitUnaryExpr(expr: Unary): T;
     visitVariableExpr(expr: Variable): T;
+    visitAssignExpr(expr: Assign): T;
 }
 
 // TODO: Learn what is abstract class
@@ -85,5 +86,20 @@ export class Variable extends Expr {
 
     accept<T>(visitor: Visitor<T>): any {
         return visitor.visitVariableExpr(this);
+    }
+}
+
+export class Assign extends Expr {
+    readonly name: Token;
+    readonly value: Expr;
+
+    constructor(name: Token, value: Expr) {
+        super();
+        this.name = name;
+        this.value = value;
+    }
+
+    accept<T>(visitor: Visitor<T>): any {
+        return visitor.visitAssignExpr(this);
     }
 }

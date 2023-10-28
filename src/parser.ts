@@ -1,4 +1,4 @@
-import { Binary, Expr, Grouping, Literal, Unary, Variable } from './expr';
+import { Assign, Binary, Expr, Grouping, Literal, Unary, Variable } from './expr';
 import { Lox } from './lox';
 import * as Stmt from './stmt';
 import { Token } from './token';
@@ -96,7 +96,29 @@ export class Parser {
      * expression    → equality ;
      */
     private expression(): Expr {
-        return this.equality();
+        return this.assignment();
+    }
+
+    /**
+     * 
+     * assignment   → IDENTIFIER "=" assignment | equality
+     */
+    private assignment(): Expr {
+        const expr: Expr = this.equality();
+
+        if (this.match(TokenType.EQUAL)) {
+            const equals: Token = this.previous();
+            const value: Expr = this.assignment();
+
+            if (expr instanceof Variable) {
+                const name: Token = expr.name;
+                return new Assign(name, value);
+            }
+
+            this.error(equals, 'Invalid assignment target.');
+        }
+
+        return expr;
     }
 
     /**
