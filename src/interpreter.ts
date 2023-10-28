@@ -10,7 +10,7 @@ export class Interpreter implements ExprVisitor<any>, Stmt.Visitor<void> {
 
     // We store it as a field directly in Interpreter so that the variables 
     // stay in memory as long as the interpreter is still running.
-    private readonly environment: Environment = new Environment();
+    private environment: Environment = new Environment();
 
     private evaluate(expr: Expr): any {
         return expr.accept(this);
@@ -18,6 +18,24 @@ export class Interpreter implements ExprVisitor<any>, Stmt.Visitor<void> {
 
     private execute(stmt: Stmt.Stmt): void {
         stmt.accept(this);
+    }
+
+    private executeBlock(statements: Stmt.Stmt[], environment: Environment): void {
+        const previous = this.environment;
+
+        try {
+            this.environment = environment;
+
+            for (const statement of statements) {
+                this.execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    public visitBlockStmt(stmt: Stmt.Block): void {
+        this.executeBlock(stmt.statements, new Environment(this.environment));
     }
 
     public visitAssignExpr(expr: Assign): void {

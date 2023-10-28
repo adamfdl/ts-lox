@@ -6,10 +6,24 @@ export interface Visitor<T> {
     visitExpressionStmt(stmt: Expression): T;
     visitPrintStmt(stmt: Print): T;
     visitVarStmt(stmt: Var): T;
+    visitBlockStmt(stmt: Block): T;
 }
 
 export abstract class Stmt {
     public accept<T>(_: Visitor<T>): any {}
+}
+
+export class Block extends Stmt {
+    readonly statements: Stmt[];
+
+    constructor(statements: Stmt[]) {
+        super();
+        this.statements = statements;
+    }
+
+    public accept<T>(visitor: Visitor<T>) {
+        return visitor.visitBlockStmt(this);
+    }
 }
 
 export class Expression extends Stmt {

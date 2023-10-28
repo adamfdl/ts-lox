@@ -67,8 +67,28 @@ export class Parser {
      */
     private statement(): Stmt.Stmt {
         if (this.match(TokenType.PRINT)) return this.printStatement();
+        if (this.match(TokenType.LEFT_BRACE)) return new Stmt.Block(this.block());
 
         return this.expressionStatement();
+    }
+
+    /**
+     *
+     * block        → "{" declaration* "}" ;
+     */
+
+    private block(): Stmt.Stmt[] {
+        let stmts: Stmt.Stmt[] = [];
+
+        while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+            const declaration = this.declaration();
+            if (declaration !== null) {
+                stmts.push(declaration);
+            }
+        }
+
+        this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+        return stmts;
     }
 
     /**
