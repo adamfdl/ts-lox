@@ -64,18 +64,77 @@ export class Parser {
     /**
      *
      * statement    → exprStmt
+     *              | forStmt
                     | ifStmt
                     | printStmt
                     | whileStmt
                     | block ;
      */
     private statement(): Stmt.Stmt {
+        if (this.match(TokenType.FOR)) return this.forStatement();
         if (this.match(TokenType.IF)) return this.ifStatement();
         if (this.match(TokenType.PRINT)) return this.printStatement();
         if (this.match(TokenType.WHILE)) return this.whileStatement();
         if (this.match(TokenType.LEFT_BRACE)) return new Stmt.Block(this.block());
 
         return this.expressionStatement();
+    }
+
+    private forStatement(): Stmt.Stmt {
+        this.consume(TokenType.LEFT_PAREN, 'Expect "(" after "for".');
+
+        // The first clause is the initializer
+        let initializer: Stmt.Stmt | null;
+        if (this.match(TokenType.SEMICOLON)) {
+            // If the token following the ( is a semicolon then the initializer has been omitted
+            initializer = null;
+        } else if (this.match(TokenType.VAR)) {
+            initializer = this.varDeclaration();
+        } else {
+            initializer = this.expressionStatement();
+        }
+
+        // Next is the condition
+        let condition = null;
+        if (!this.check(TokenType.SEMICOLON)) {
+            condition = this.expression();
+        }
+        
+        this.consume(TokenType.SEMICOLON, 'Expect ";" after loop condition.');
+
+        // The last clause is the increment
+        let increment = null;
+        if (!this.check(TokenType.RIGHT_PAREN)) {
+            increment = this.expression();
+        }
+
+        this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after for clauses.');
+
+        // All that remains is the body
+        let body: Stmt.Stmt = this.statement();
+
+        // The increment, if there is one, executes after the body in each 
+        // iteration of the loop. We do that by replacing the body with a 
+        // little block that contains the original body,
+        // followed by an expression statement that evaluates the increment
+        if (increment !== null) {
+            body = new Stmt.Block([body, new Stmt.Expression(increment)]);
+        }
+
+        // Next we take the condition and the body and build the loop
+        // using the primitive while loop. If the condition is omitted,
+        // we jammed in a `true` to make an infinite loop
+        if (condition === null) condition = new Literal(true)
+        body = new Stmt.While(condition, body);
+
+        // Finally, if there is an initializer, it runs once before the entire loop.
+        // We do that by, again, replacing the whole statement with a block that 
+        // runs the initializer and then executes the loop.
+        if (initializer !== null) {
+            body = new Stmt.Block([initializer, body]);
+        }
+
+        return body;
     }
 
     /**
