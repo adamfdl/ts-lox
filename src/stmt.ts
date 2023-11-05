@@ -8,6 +8,7 @@ export interface Visitor<T> {
     visitVarStmt(stmt: Var): T;
     visitBlockStmt(stmt: Block): T;
     visitIfStmt(stmt: If): T;
+    visitWhileStmt(stmt: While): T;
 }
 
 export abstract class Stmt {
@@ -82,5 +83,23 @@ export class Var extends Stmt {
 
     public accept<T>(visitor: Visitor<T>) {
         return visitor.visitVarStmt(this);
+    }
+}
+
+export class While extends Stmt {
+    // Here you can see why it's nice to separate base classes for expressions and statements.
+    // The field declaration makes it clear that the condition is an expression and the body is a statement.
+
+    readonly condition: Expr;
+    readonly body: Stmt;
+
+    constructor(condition: Expr, body: Stmt) {
+        super();
+        this.condition = condition;
+        this.body = body;
+    }
+
+    public accept<T>(visitor: Visitor<T>) {
+        return visitor.visitWhileStmt(this);
     }
 }

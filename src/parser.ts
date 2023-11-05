@@ -63,11 +63,16 @@ export class Parser {
 
     /**
      *
-     * statement    → exprStmt | printStmt ;
+     * statement    → exprStmt
+                    | ifStmt
+                    | printStmt
+                    | whileStmt
+                    | block ;
      */
     private statement(): Stmt.Stmt {
         if (this.match(TokenType.IF)) return this.ifStatement();
         if (this.match(TokenType.PRINT)) return this.printStatement();
+        if (this.match(TokenType.WHILE)) return this.whileStatement();
         if (this.match(TokenType.LEFT_BRACE)) return new Stmt.Block(this.block());
 
         return this.expressionStatement();
@@ -85,6 +90,18 @@ export class Parser {
         const elseBranch: Stmt.Stmt | null = this.match(TokenType.ELSE) ? this.statement() : null;
 
         return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    /**
+     * while        → "while" "(" expression ")" statement ;
+     */
+    private whileStatement(): Stmt.Stmt {
+        this.consume(TokenType.LEFT_PAREN, 'Expect "(" after "while".');
+        const condition: Expr = this.expression();
+        this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after condition.');
+        const body: Stmt.Stmt = this.statement();
+
+        return new Stmt.While(condition, body);
     }
 
     /**
