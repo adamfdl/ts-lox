@@ -1,5 +1,5 @@
 import * as Stmt from './stmt';
-import { Binary, Expr, Grouping, Literal, Unary, Visitor as ExprVisitor, Variable, Assign } from './expr';
+import { Binary, Expr, Grouping, Literal, Unary, Visitor as ExprVisitor, Variable, Assign, Logical } from './expr';
 import { Lox } from './lox';
 import { RuntimeError } from './runtime_error';
 import { Token } from './token';
@@ -31,6 +31,26 @@ export class Interpreter implements ExprVisitor<any>, Stmt.Visitor<void> {
             }
         } finally {
             this.environment = previous;
+        }
+    }
+
+    public visitLogicalExpr(expr: Logical) {
+        const left: any = this.evaluate(expr.left);
+
+        if (expr.operator.type === TokenType.OR) {
+            if (this.isTruthy(left)) return left;
+        } else {
+            if (!this.isTruthy(left)) return left;
+        }
+
+        return this.evaluate(expr.right);
+    }
+
+    public visitIfStmt(stmt: Stmt.If): void {
+        if (this.isTruthy(this.evaluate(stmt.condition))) {
+            this.execute(stmt.thenBranch);
+        } else if (stmt.elseBranch !== null) {
+            this.execute(stmt.elseBranch);
         }
     }
 
@@ -142,7 +162,7 @@ export class Interpreter implements ExprVisitor<any>, Stmt.Visitor<void> {
      */
     private isTruthy(object: any): boolean {
         if (object === null) return false;
-        if (object === 'boolean') return object;
+        if (typeof object === 'boolean') return object;
         return true;
     }
 

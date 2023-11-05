@@ -8,6 +8,7 @@ export interface Visitor<T> {
     visitUnaryExpr(expr: Unary): T;
     visitVariableExpr(expr: Variable): T;
     visitAssignExpr(expr: Assign): T;
+    visitLogicalExpr(expr: Logical): T;
 }
 
 // TODO: Learn what is abstract class
@@ -58,6 +59,23 @@ export class Literal extends Expr {
 
     accept<T>(visitor: Visitor<T>): any {
         return visitor.visitLiteralExpr(this);
+    }
+}
+
+export class Logical extends Expr {
+    readonly left: Expr;
+    readonly operator: Token;
+    readonly right: Expr;
+
+    constructor(left: Expr, operator: Token, right: Expr) {
+        super();
+        this.left = left;
+        this.operator = operator;
+        this.right = right;
+    }
+
+    accept<T>(visitor: Visitor<T>) {
+        return visitor.visitLogicalExpr(this);
     }
 }
 

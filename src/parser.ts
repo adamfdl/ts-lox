@@ -1,4 +1,4 @@
-import { Assign, Binary, Expr, Grouping, Literal, Unary, Variable } from './expr';
+import { Assign, Binary, Expr, Grouping, Literal, Logical, Unary, Variable } from './expr';
 import { Lox } from './lox';
 import * as Stmt from './stmt';
 import { Token } from './token';
@@ -66,10 +66,25 @@ export class Parser {
      * statement    → exprStmt | printStmt ;
      */
     private statement(): Stmt.Stmt {
+        if (this.match(TokenType.IF)) return this.ifStatement();
         if (this.match(TokenType.PRINT)) return this.printStatement();
         if (this.match(TokenType.LEFT_BRACE)) return new Stmt.Block(this.block());
 
         return this.expressionStatement();
+    }
+
+    /**
+     * if          → "if" "(" expression ")" statement ( "else" statement )? ;
+     */
+    private ifStatement(): Stmt.Stmt {
+        this.consume(TokenType.LEFT_PAREN, 'Expect "(" after "if".');
+        const condition: Expr = this.expression();
+        this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after if condition.');
+
+        const thenBranch: Stmt.Stmt = this.statement();
+        const elseBranch: Stmt.Stmt | null = this.match(TokenType.ELSE) ? this.statement() : null;
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     /**
@@ -113,7 +128,7 @@ export class Parser {
 
     /**
      *
-     * expression    → equality ;
+     * expression    → assignmemnt ;
      */
     private expression(): Expr {
         return this.assignment();
@@ -121,10 +136,10 @@ export class Parser {
 
     /**
      * 
-     * assignment   → IDENTIFIER "=" assignment | equality
+     * assignment   → IDENTIFIER "=" assignment | logic_or ;
      */
     private assignment(): Expr {
-        const expr: Expr = this.equality();
+        const expr: Expr = this.or();
 
         if (this.match(TokenType.EQUAL)) {
             const equals: Token = this.previous();
@@ -136,6 +151,38 @@ export class Parser {
             }
 
             this.error(equals, 'Invalid assignment target.');
+        }
+
+        return expr;
+    }
+
+    /**
+     * 
+     * logic_or     → logic_and ( "or" logic_and )* ;
+     */
+    private or(): Expr {
+        let expr: Expr = this.and();
+
+        while (this.match(TokenType.OR)) {
+            const operator: Token = this.previous();
+            const right = this.and();
+            expr = new Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    /**
+     * 
+     * logical_and  -> equality ( "and" equality )* ;
+     */
+    private and(): Expr {
+        let expr: Expr = this.equality();
+
+        while (this.match(TokenType.AND)) {
+            const operator: Token = this.previous();
+            const right = this.equality();
+            expr = new Logical(expr, operator, right);
         }
 
         return expr;
